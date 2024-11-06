@@ -81,7 +81,6 @@ class BinarySearchTree {
   levelOrder() {
     const queue = [];
     queue.push(this.root);
-    console.log(queue);
 
     while (queue.length) {
       const currentNode = queue.shift(); //take the head of the array and put into the current queue
@@ -94,6 +93,51 @@ class BinarySearchTree {
         queue.push(currentNode.right);
       }
     }
+  }
+
+  min(root) {
+    if (!root.left) {
+      return root.value;
+    } else {
+      return this.min(root.left);
+    }
+  }
+
+  max(root) {
+    if (!root.right) {
+      return root.value;
+    } else {
+      return this.max(root.right);
+    }
+  }
+
+  delete(value) {
+    this.root = this.deletedNode(this.root, value);
+  }
+
+  deletedNode(root, value) {
+    if (root === null) {
+      return root;
+    }
+    if (value < root.value) {
+      root.left = this.deletedNode(root.left, value);
+    } else if (value > root.value) {
+      root.right = this.deletedNode(root.right, value);
+    } else {
+      if (!root.left && !root.right) {
+        return null;
+      }
+
+      if (!root.left) {
+        return root.right;
+      } else if (!root.right) {
+        return root.left;
+      }
+
+      root.value = this.min(root.right);
+      root.right = this.deletedNode(root.right, root.value);
+    }
+    return root;
   }
 }
 
@@ -117,23 +161,11 @@ bst.insert(10);
 bst.insert(5);
 bst.insert(15);
 bst.insert(3);
-bst.insert(7);
 
-console.log(bst.search(bst.root, 5));
-bst.preOrder(bst.root);
-bst.inOrder(bst.root);
-bst.postOrder(bst.root);
-
-// console.log("Root:", bst.root ? bst.root.value : "undefined"); // Check root value
-// console.log(
-//   "Root Left Child:",
-//   bst.root.left ? bst.root.left.value : "undefined"
-// ); // Check left child
-// console.log(
-//   "Root Right Child:",
-//   bst.root.right ? bst.root.right.value : "undefined"
-// ); // Check right child
-
-prettyPrint(bst.root);
+console.log(prettyPrint(bst.root));
 
 bst.levelOrder();
+
+bst.delete(10);
+
+console.log(prettyPrint(bst.root));
