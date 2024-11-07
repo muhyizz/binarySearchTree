@@ -54,28 +54,33 @@ class BinarySearchTree {
     }
   }
 
-  preOrder(root) {
+  preOrder(root, array = []) {
     if (root) {
-      console.log(root.value);
-      this.preOrder(root.left);
-      this.preOrder(root.right);
+      array.push(root.value);
+      this.preOrder(root.left, array);
+      this.preOrder(root.right, array);
     }
+    return array;
   }
 
-  inOrder(root) {
+  inOrder(root, array = []) {
     if (root) {
-      this.inOrder(root.left);
-      console.log(root.value);
-      this.inOrder(root.right);
+      this.inOrder(root.left, array);
+      array.push(root.value);
+      this.inOrder(root.right, array);
     }
+
+    return array;
   }
 
-  postOrder(root) {
+  postOrder(root, array = []) {
     if (root) {
-      this.postOrder(root.left);
-      this.postOrder(root.right);
-      console.log(root.value);
+      this.postOrder(root.left, array);
+      this.postOrder(root.right, array);
+      array.push(root.value);
     }
+
+    return array;
   }
 
   levelOrder() {
@@ -115,6 +120,55 @@ class BinarySearchTree {
     this.root = this.deletedNode(this.root, value);
   }
 
+  depth(root) {
+    if (!root) return 0;
+
+    const leftDepth = this.depth(root.left);
+    const rightDepth = this.depth(root.right);
+
+    return Math.max(leftDepth, rightDepth) + 1;
+  }
+
+  width() {
+    if (!this.root) return 0;
+
+    const queue = [];
+    queue.push(this.root);
+    let maxWidth = 0;
+
+    while (queue.length) {
+      const levelWidth = queue.length;
+      maxWidth = Math.max(maxWidth, levelWidth);
+
+      for (let i = 0; i < levelWidth; i++) {
+        const currNode = queue.shift();
+
+        if (currNode.left) queue.push(currNode.left);
+        if (currNode.right) queue.push(currNode.right);
+      }
+    }
+    return maxWidth;
+  }
+
+  isBalance(root) {
+    return this.checkHeight(root) != -1;
+  }
+
+  checkHeight(root) {
+    if (root === null) return 0;
+
+    const leftHeight = this.checkHeight(root.left);
+    const rightHeight = this.checkHeight(root.right);
+
+    if (leftHeight === -1 || rightHeight === -1) return -1;
+
+    if (Math.abs(leftHeight - rightHeight) > 1) {
+      return -1;
+    }
+
+    return Math.max(leftHeight, rightHeight) + 1;
+  }
+
   deletedNode(root, value) {
     if (root === null) {
       return root;
@@ -141,6 +195,38 @@ class BinarySearchTree {
   }
 }
 
+const buildTree = (array) => {
+  if (!Array.isArray(array) || array.length === 0) {
+    return null;
+  }
+
+  const bst = new BinarySearchTree();
+  let newArray = arrayCleanDup(array);
+
+  const balance = (newArray) => {
+    if (newArray.length === 0) return;
+
+    const midPoint = Math.floor(newArray.length / 2);
+    const midValue = newArray[midPoint];
+    bst.insert(midValue);
+
+    balance(newArray.slice(0, midPoint));
+    balance(newArray.slice(midPoint + 1));
+  };
+
+  balance(newArray);
+  return bst;
+};
+
+const arrayCleanDup = (array) => {
+  return Array.from(new Set(array)).sort((a, b) => a - b);
+};
+
+const reBalance = (BinarySearchTree) => {
+  let array = BinarySearchTree.preOrder(BinarySearchTree.root);
+  return buildTree(array);
+};
+
 const prettyPrint = (node, prefix = "", isLeft = true) => {
   if (node === null) {
     return;
@@ -154,18 +240,32 @@ const prettyPrint = (node, prefix = "", isLeft = true) => {
   }
 };
 
-const bst = new BinarySearchTree();
-console.log("Tree is empty?", bst.isEmpty());
+const odin = () => {
+  const randomArray = Array.from({ length: 100 }, () =>
+    Math.floor(Math.random() * 1000)
+  );
+  let output = new BinarySearchTree();
+  output = buildTree(randomArray);
 
-bst.insert(10);
-bst.insert(5);
-bst.insert(15);
-bst.insert(3);
+  console.log("Is the tree balance", output.isBalance(output.root));
 
-console.log(prettyPrint(bst.root));
+  let preOrderOutput = output.preOrder(output.root);
+  console.log(preOrderOutput);
+  let postOrderOutput = output.postOrder(output.root);
+  console.log(postOrderOutput);
+  let inOrderOutput = output.inOrder(output.root);
+  console.log(inOrderOutput);
 
-bst.levelOrder();
+  for (let i = 0; i < 100; i++) {
+    output.insert(Math.floor(Math.random() * 1000) + 1);
+  }
 
-bst.delete(10);
+  console.log("Is the tree now balance", output.isBalance(output.root));
 
-console.log(prettyPrint(bst.root));
+  output = reBalance(output);
+
+  console.log("Is the tree now balance", output.isBalance(output.root));
+  console.log(prettyPrint(output.root));
+};
+
+odin();
